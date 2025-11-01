@@ -1,0 +1,48 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "pipeline-anomaly",
+  "projectType": "application",
+  "root": "pipeline_anomaly",
+  "sourceRoot": "pipeline_anomaly/src",
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make install",
+        "cwd": "pipeline_anomaly"
+      }
+    },
+    "infra-up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make infra-up",
+        "cwd": "pipeline_anomaly"
+      },
+      "cache": false
+    },
+    "infra-down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make infra-down",
+        "cwd": "pipeline_anomaly"
+      },
+      "cache": false
+    },
+    "pipeline": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make pipeline",
+        "cwd": "pipeline_anomaly"
+      },
+      "cache": false
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make test",
+        "cwd": "pipeline_anomaly"
+      }
+    }
+  },
+  "tags": ["etl", "anomaly"]
+}

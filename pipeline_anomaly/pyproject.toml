@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "pipeline-anomaly"
+version = "0.1.0"
+description = "Mini ETL pipeline with anomaly detection on ClickHouse"
+authors = ["Andrew Ghostuhin <me@torinasakura.name>"]
+packages = [{include = "pipeline_anomaly", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+clickhouse-connect = "^0.7.6"
+numpy = "^1.26"
+pandas = "^2.2"
+scikit-learn = "^1.5"
+scipy = "^1.11"
+pydantic = "^2.7"
+pyyaml = "^6.0"
+loguru = "^0.7"
+typer = {version = "^0.12", extras = ["all"]}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

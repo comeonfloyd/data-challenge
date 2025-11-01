@@ -1,0 +1,26 @@
+clickhouse:
+  host: localhost
+  port: 8123
+  database: pipeline
+  username: default
+  password: ""
+
+dataset:
+  row_count: 100000000
+  batch_size: 500000
+  anomaly_ratio: 0.001
+  seed: 42
+
+anomaly_detection:
+  zscore_threshold: 3.0
+  isolation_forest:
+    contamination: 0.001
+    random_state: 42
+  dbscan:
+    eps: 0.7
+    min_samples: 15
+
+alerting:
+  enabled: true
+  threshold_score: 0.8
+  sink: stdout
