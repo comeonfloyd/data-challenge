@@ -43,9 +43,19 @@ anomaly_detection:
   dbscan:
     eps: 0.7
     min_samples: 15
-  mad:
-    threshold: 6.0
 
+  rolling_mad:
+    window: 60
+    threshold: 4.0
+    min_periods: 30
+  ensemble:
+    enabled: true
+    min_detectors: 2
+    weights:
+      zscore: 0.5
+      isolation_forest: 1.2
+      dbscan: 1.0
+      rolling_mad: 0.8
 alerting:
   enabled: true
   threshold_score: 0.8

@@ -29,8 +29,11 @@ make infra-down
 
 ## Метрики
 
-- Конфигурируемый профайлинг агрегатов (квантили, IQR, EWMA-тренд) через `aggregation.metrics`.
-- Z-score, Median Absolute Deviation, IsolationForest и DBSCAN.
+
+- Z-score по агрегатам.
+- IsolationForest, DBSCAN и Rolling MAD по фичам.
+- Взвешенный ансамбль алертов для консервативных сценариев.
+
 - Отчёт в виде JSON + Markdown (в ClickHouse хранится табличная витрина `anomaly_reports`).
 
 ## Технологии

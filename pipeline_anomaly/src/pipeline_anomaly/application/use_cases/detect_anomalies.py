@@ -6,6 +6,7 @@ import pandas as pd
 
 from pipeline_anomaly.domain.models.anomaly import Anomaly, AnomalyReport
 from pipeline_anomaly.domain.services.interfaces import AnomalyDetector, ClickHouseWriter
+from pipeline_anomaly.application.services.ensemble import WeightedAnomalyEnsemble
 
 
 class DetectAnomalies:
@@ -14,12 +15,14 @@ class DetectAnomalies:
         writer: ClickHouseWriter,
         detectors: list[AnomalyDetector],
         threshold: float,
-        window_minutes: int,
+        ensemble: WeightedAnomalyEnsemble | None = None,
     ) -> None:
         self._writer = writer
         self._detectors = detectors
         self._threshold = threshold
-        self._window_minutes = window_minutes
+
+        self._ensemble = ensemble
+
 
     def execute(self) -> AnomalyReport:
         dataframe = self._writer.read_latest_window(minutes=self._window_minutes)
@@ -38,6 +41,11 @@ class DetectAnomalies:
                     description=f"{detector.name} severity={severity:.3f}",
                 )
             )
+
+        if self._ensemble:
+            ensemble_anomaly = self._ensemble.combine(anomalies)
+            if ensemble_anomaly:
+                anomalies.append(ensemble_anomaly)
 
         report = AnomalyReport(
             generated_at=datetime.utcnow(),

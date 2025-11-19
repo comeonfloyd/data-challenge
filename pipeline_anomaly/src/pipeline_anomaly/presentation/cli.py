@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 
+from pipeline_anomaly.application.services.ensemble import WeightedAnomalyEnsemble
 from pipeline_anomaly.application.use_cases.compute_aggregates import ComputeAggregates
 from pipeline_anomaly.application.use_cases.detect_anomalies import DetectAnomalies
 from pipeline_anomaly.application.use_cases.load_dataset import LoadSyntheticDataset
@@ -13,9 +14,7 @@ from pipeline_anomaly.infrastructure.clients.clickhouse import ClickHouseFactory
 from pipeline_anomaly.infrastructure.config import PipelineConfig
 from pipeline_anomaly.infrastructure.detectors.dbscan import DBSCANDetector
 from pipeline_anomaly.infrastructure.detectors.isolation_forest import IsolationForestDetector
-from pipeline_anomaly.infrastructure.detectors.median_absolute_deviation import (
-    MedianAbsoluteDeviationDetector,
-)
+from pipeline_anomaly.infrastructure.detectors.rolling_mad import RollingMADDetector
 from pipeline_anomaly.infrastructure.detectors.zscore import ZScoreDetector
 from pipeline_anomaly.infrastructure.generators.synthetic_generator import SyntheticDatasetGenerator
 from pipeline_anomaly.infrastructure.repositories.clickhouse_repository import ClickHouseRepository
@@ -51,12 +50,25 @@ def run(config: Path = typer.Option(..., exists=True, readable=True)) -> None:
             eps=cfg.anomaly_detection.dbscan.eps,
             min_samples=cfg.anomaly_detection.dbscan.min_samples,
         ),
+        RollingMADDetector(
+            window=cfg.anomaly_detection.rolling_mad.window,
+            threshold=cfg.anomaly_detection.rolling_mad.threshold,
+            min_periods=cfg.anomaly_detection.rolling_mad.min_periods,
+        ),
     ]
+    ensemble = (
+        WeightedAnomalyEnsemble(
+            weights=cfg.anomaly_detection.ensemble.weights,
+            min_detectors=cfg.anomaly_detection.ensemble.min_detectors,
+        )
+        if cfg.anomaly_detection.ensemble and cfg.anomaly_detection.ensemble.enabled
+        else None
+    )
     detector = DetectAnomalies(
         writer=repository,
         detectors=detectors,
         threshold=cfg.alerting.threshold_score,
-        window_minutes=cfg.anomaly_detection.window_minutes,
+        ensemble=ensemble,
     )
 
     sink = StdOutAlertSink()
