@@ -20,10 +20,12 @@ class DetectAnomalies:
         self._writer = writer
         self._detectors = detectors
         self._threshold = threshold
+
         self._ensemble = ensemble
 
+
     def execute(self) -> AnomalyReport:
-        dataframe = self._writer.read_latest_window()
+        dataframe = self._writer.read_latest_window(minutes=self._window_minutes)
         window_start = dataframe["event_time"].min()
         window_end = dataframe["event_time"].max()
 

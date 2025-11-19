@@ -37,10 +37,11 @@ def run(config: Path = typer.Option(..., exists=True, readable=True)) -> None:
 
     generator = SyntheticDatasetGenerator(config=cfg.dataset)
     loader = LoadSyntheticDataset(generator=generator, writer=repository)
-    aggregator = ComputeAggregates(writer=repository)
+    aggregator = ComputeAggregates(writer=repository, config=cfg.aggregation)
 
     detectors = [
         ZScoreDetector(threshold=cfg.anomaly_detection.zscore_threshold),
+        MedianAbsoluteDeviationDetector(threshold=cfg.anomaly_detection.mad_threshold),
         IsolationForestDetector(
             contamination=cfg.anomaly_detection.isolation_forest.contamination,
             random_state=cfg.anomaly_detection.isolation_forest.random_state,

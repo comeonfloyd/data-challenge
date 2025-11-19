@@ -27,7 +27,7 @@ class ClickHouseWriter(Protocol):
     def persist_report(self, report: AnomalyReport) -> None:
         ...
 
-    def read_latest_window(self) -> pd.DataFrame:
+    def read_latest_window(self, minutes: int | None = None) -> pd.DataFrame:
         ...
 
 

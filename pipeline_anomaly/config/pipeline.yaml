@@ -11,7 +11,31 @@ dataset:
   anomaly_ratio: 0.001
   seed: 42
 
+aggregation:
+  window_minutes: 120
+  metrics:
+    - name: count
+      type: count
+    - name: mean_value
+      type: mean
+      column: value
+    - name: std_value
+      type: std
+      column: value
+    - name: p95_value
+      type: quantile
+      column: value
+      q: 0.95
+    - name: iqr_value
+      type: iqr
+      column: value
+    - name: ewma_trend
+      type: ewma_trend
+      column: value
+      span: 36
+
 anomaly_detection:
+  window_minutes: 180
   zscore_threshold: 3.0
   isolation_forest:
     contamination: 0.001
@@ -19,6 +43,7 @@ anomaly_detection:
   dbscan:
     eps: 0.7
     min_samples: 15
+
   rolling_mad:
     window: 60
     threshold: 4.0
@@ -31,7 +56,6 @@ anomaly_detection:
       isolation_forest: 1.2
       dbscan: 1.0
       rolling_mad: 0.8
-
 alerting:
   enabled: true
   threshold_score: 0.8

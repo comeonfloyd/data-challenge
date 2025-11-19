@@ -74,11 +74,12 @@ class ClickHouseRepository:
         with self._factory.connect() as client:
             client.insert_dicts("anomaly_reports", rows)
 
-    def read_latest_window(self) -> pd.DataFrame:
+    def read_latest_window(self, minutes: int | None = None) -> pd.DataFrame:
         with self._factory.connect() as client:
-            query = """
+            interval_minutes = minutes or 60 * 24
+            query = f"""
             SELECT * FROM events
-            WHERE event_time >= now() - INTERVAL 1 DAY
+            WHERE event_time >= now() - INTERVAL {interval_minutes} MINUTE
             ORDER BY event_time
             """
             result = client.query_df(query)

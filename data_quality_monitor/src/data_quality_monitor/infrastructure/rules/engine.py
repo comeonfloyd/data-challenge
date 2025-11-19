@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Callable, Mapping
 
 import pandas as pd
@@ -58,11 +58,43 @@ def schema(frame: pd.DataFrame, expectation: Expectation) -> RuleResult:
     )
 
 
+def freshness(frame: pd.DataFrame, expectation: Expectation) -> RuleResult:
+    column = expectation.params.get("column", "event_time")
+    max_minutes = float(expectation.params.get("max_minutes", 5))
+    if column not in frame.columns or frame.empty:
+        lag = float("inf")
+    else:
+        latest = pd.to_datetime(frame[column]).max()
+        if latest.tzinfo is None:
+            latest = latest.tz_localize(timezone.utc)
+        else:
+            latest = latest.tz_convert(timezone.utc)
+        now = datetime.now(tz=timezone.utc)
+        lag = (now - latest).total_seconds() / 60.0
+    return RuleResult(
+        rule=f"freshness:{column}",
+        passed=lag <= max_minutes,
+        details={"lag_minutes": lag, "threshold": max_minutes},
+    )
+
+
+def volume(frame: pd.DataFrame, expectation: Expectation) -> RuleResult:
+    min_rows = int(expectation.params.get("min_rows", 1))
+    count = int(len(frame))
+    return RuleResult(
+        rule="volume",
+        passed=count >= min_rows,
+        details={"rows": count, "min_rows": min_rows},
+    )
+
+
 REGISTRY: Mapping[str, Evaluator] = {
     "completeness": completeness,
     "uniqueness": uniqueness,
     "range": range_check,
     "schema": schema,
+    "freshness": freshness,
+    "volume": volume,
 }
 
 

@@ -29,9 +29,11 @@ make infra-down
 
 ## Метрики
 
+
 - Z-score по агрегатам.
 - IsolationForest, DBSCAN и Rolling MAD по фичам.
 - Взвешенный ансамбль алертов для консервативных сценариев.
+
 - Отчёт в виде JSON + Markdown (в ClickHouse хранится табличная витрина `anomaly_reports`).
 
 ## Технологии

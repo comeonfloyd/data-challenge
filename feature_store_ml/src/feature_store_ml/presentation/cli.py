@@ -20,7 +20,7 @@ app = typer.Typer()
 def _bootstrap(config_path: Path) -> tuple[StoreConfig, ClickHouseRepository, FeatureRegistry, LightGBMTrainer]:
     cfg = StoreConfig.load(config_path)
     repository = ClickHouseRepository(factory=ClickHouseFactory(cfg.clickhouse))
-    registry = FeatureRegistry.default()
+    registry = FeatureRegistry.from_config(cfg.features)
     trainer = LightGBMTrainer(config=cfg.training, artifacts_dir=config_path.parent / "artifacts")
     return cfg, repository, registry, trainer
 
@@ -29,7 +29,7 @@ def _bootstrap(config_path: Path) -> tuple[StoreConfig, ClickHouseRepository, Fe
 def materialize(config: Path = typer.Option(..., exists=True)) -> None:
     cfg, repository, registry, trainer = _bootstrap(config)
     use_case = MaterializeFeatures(repository=repository, registry=registry)
-    use_case.execute(lookback_hours=cfg.features.lookback_hours)
+    use_case.execute(lookback_hours=cfg.features.lookback_hours, min_records=cfg.features.min_records)
 
 
 @app.command()
@@ -50,6 +50,7 @@ def serve(config: Path = typer.Option(..., exists=True)) -> None:
     use_case = ServePredictions(
         repository=repository,
         trainer=trainer,
+        batch_size=cfg.serving.batch_size,
         threshold=cfg.serving.threshold,
     )
     use_case.execute()
