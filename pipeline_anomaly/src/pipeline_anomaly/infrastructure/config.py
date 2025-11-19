@@ -30,10 +30,26 @@ class DBSCANConfig:
 
 
 @dataclass(slots=True)
+class RollingMADConfig:
+    window: int
+    threshold: float
+    min_periods: int | None = None
+
+
+@dataclass(slots=True)
+class EnsembleConfig:
+    enabled: bool
+    min_detectors: int
+    weights: dict[str, float]
+
+
+@dataclass(slots=True)
 class AnomalyDetectionConfig:
     zscore_threshold: float
     isolation_forest: IsolationForestConfig
     dbscan: DBSCANConfig
+    rolling_mad: RollingMADConfig
+    ensemble: EnsembleConfig | None = None
 
 
 @dataclass(slots=True)
@@ -61,6 +77,12 @@ class PipelineConfig:
                 zscore_threshold=float(raw["anomaly_detection"]["zscore_threshold"]),
                 isolation_forest=IsolationForestConfig(**raw["anomaly_detection"]["isolation_forest"]),
                 dbscan=DBSCANConfig(**raw["anomaly_detection"]["dbscan"]),
+                rolling_mad=RollingMADConfig(**raw["anomaly_detection"]["rolling_mad"]),
+                ensemble=(
+                    EnsembleConfig(**raw["anomaly_detection"].get("ensemble", {}))
+                    if raw["anomaly_detection"].get("ensemble")
+                    else None
+                ),
             ),
             alerting=AlertingConfig(**raw["alerting"]),
         )
