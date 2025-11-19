@@ -1,6 +1,6 @@
 # Feature Store + ML Sandbox
 
-Простой feature-store поверх ClickHouse + LightGBM тренировка для детекта аномалий.
+Feature Store поверх ClickHouse + LightGBM-пайплайн для детекта аномалий.
 
 ## Архитектура
 
@@ -22,11 +22,14 @@ make serve
 
 ## Фичи
 
-Фичи строятся по окну: count, mean, std, quantiles и rolling ratio. Registry в `infrastructure/registry.py`.
+- time-bucket агрегаты (mean/std/count/quantiles) с `bucket_minutes` из `store.yaml`;
+- производные фичи — IQR, тренд по среднему, волатильность среднего за 3 окна;
+- материализация в ClickHouse в формате `Map(String, Float64)` для гибкой эволюции схемы.
 
-## Модель
+## Модель и inference
 
-LightGBM BinaryClassifier -> вероятность аномалии. Все артефакты валятся в `artifacts/`.
+- `make train` берёт материализованный feature view и обучает LightGBM, артефакты кладутся в `artifacts/`.
+- `make serve` подтягивает свежие фичи, прогоняет инференс батчами и пишет скор в таблицу `predictions`.
 
 ## Тесты
 

@@ -9,13 +9,20 @@ from pipeline_anomaly.domain.services.interfaces import AnomalyDetector, ClickHo
 
 
 class DetectAnomalies:
-    def __init__(self, writer: ClickHouseWriter, detectors: list[AnomalyDetector], threshold: float) -> None:
+    def __init__(
+        self,
+        writer: ClickHouseWriter,
+        detectors: list[AnomalyDetector],
+        threshold: float,
+        window_minutes: int,
+    ) -> None:
         self._writer = writer
         self._detectors = detectors
         self._threshold = threshold
+        self._window_minutes = window_minutes
 
     def execute(self) -> AnomalyReport:
-        dataframe = self._writer.read_latest_window()
+        dataframe = self._writer.read_latest_window(minutes=self._window_minutes)
         window_start = dataframe["event_time"].min()
         window_end = dataframe["event_time"].max()
 

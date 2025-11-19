@@ -1,12 +1,12 @@
 # Data Quality Monitoring Sandbox
 
-FastAPI-сервис для автоматической проверки качества данных: completeness, uniqueness, value ranges, schema drift.
+FastAPI-сервис для автоматической проверки качества данных: completeness, uniqueness, диапазоны, schema drift, freshness и контроль объёма.
 
 ## Архитектура
 
 - `domain` — правила валидации и результаты проверок.
 - `application` — orchestrator для запуска проверок по конфигу.
-- `infrastructure` — ClickHouse client, rule registry, Kafka mock (через файл), FastAPI endpoints.
+- `infrastructure` — ClickHouse client/репозиторий и движок правил.
 - `presentation` — REST API и CLI-триггеры.
 
 ## Запуск
@@ -28,9 +28,14 @@ rules:
       - type: completeness
         column: value
         threshold: 0.99
+      - type: freshness
+        column: ts
+        max_minutes: 60
+      - type: volume
+        min_rows: 1000
 ```
 
-Сервис хранит результаты в ClickHouse таблице `dq_reports` и возвращает их через `/reports`.
+Сервис хранит результаты в ClickHouse таблице `dq_reports` и возвращает их через `/reports` + экспортирует Prometheus-метрику количества запусков.
 
 ## Мониторинг
 

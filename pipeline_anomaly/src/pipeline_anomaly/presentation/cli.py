@@ -13,6 +13,9 @@ from pipeline_anomaly.infrastructure.clients.clickhouse import ClickHouseFactory
 from pipeline_anomaly.infrastructure.config import PipelineConfig
 from pipeline_anomaly.infrastructure.detectors.dbscan import DBSCANDetector
 from pipeline_anomaly.infrastructure.detectors.isolation_forest import IsolationForestDetector
+from pipeline_anomaly.infrastructure.detectors.median_absolute_deviation import (
+    MedianAbsoluteDeviationDetector,
+)
 from pipeline_anomaly.infrastructure.detectors.zscore import ZScoreDetector
 from pipeline_anomaly.infrastructure.generators.synthetic_generator import SyntheticDatasetGenerator
 from pipeline_anomaly.infrastructure.repositories.clickhouse_repository import ClickHouseRepository
@@ -35,10 +38,11 @@ def run(config: Path = typer.Option(..., exists=True, readable=True)) -> None:
 
     generator = SyntheticDatasetGenerator(config=cfg.dataset)
     loader = LoadSyntheticDataset(generator=generator, writer=repository)
-    aggregator = ComputeAggregates(writer=repository)
+    aggregator = ComputeAggregates(writer=repository, config=cfg.aggregation)
 
     detectors = [
         ZScoreDetector(threshold=cfg.anomaly_detection.zscore_threshold),
+        MedianAbsoluteDeviationDetector(threshold=cfg.anomaly_detection.mad_threshold),
         IsolationForestDetector(
             contamination=cfg.anomaly_detection.isolation_forest.contamination,
             random_state=cfg.anomaly_detection.isolation_forest.random_state,
@@ -52,6 +56,7 @@ def run(config: Path = typer.Option(..., exists=True, readable=True)) -> None:
         writer=repository,
         detectors=detectors,
         threshold=cfg.alerting.threshold_score,
+        window_minutes=cfg.anomaly_detection.window_minutes,
     )
 
     sink = StdOutAlertSink()
