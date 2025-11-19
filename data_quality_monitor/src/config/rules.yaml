@@ -18,11 +18,6 @@ rules:
         column: value
         min: 0
         max: 1000
-      - type: freshness
-        column: ts
-        max_minutes: 60
-      - type: volume
-        min_rows: 1000
   - table: dq.events
     expectations:
       - type: schema

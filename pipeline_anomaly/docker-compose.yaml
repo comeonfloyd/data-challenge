@@ -5,7 +5,7 @@ services:
     container_name: pipeline-clickhouse
     ports:
       - "8123:8123"
-      - "9000:9000"
+      - "9010:9000"
     environment:
       CLICKHOUSE_DB: pipeline
       CLICKHOUSE_USER: default
